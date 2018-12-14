@@ -122,4 +122,27 @@ Public interface PlatformTransactionManager()...{
 
 整个线程没结束，A、B声明式事务都没提交
 
-详细原文：https://blog.csdn.net/trigl/article/details/50968079
+* `Transaction rolled back because it has been marked as rollback-only`
+
+在嵌套事务中，A套B，当B出现异常回滚时，A却try-catch了B的异常，导致B事务rollback，A却commit，则会出现这个异常
+
+```java
+void method1(){
+    try{
+        method2()
+    }catch(...){
+        xxx
+    }
+}
+
+void method2(){
+    throw new Exception();
+}
+```
+
+> 解决方法
+
+在抛出异常的最原始地方处理异常，即在spring捕获到异常之前处理掉
+
+详细原文：
+- [Spring事务管理（详解+实例）](https://blog.csdn.net/trigl/article/details/50968079)
