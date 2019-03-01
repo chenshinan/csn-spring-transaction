@@ -1,39 +1,39 @@
 # Spring事务管理
 
-## 初步理解
+## 什么是事务
 
-事务就是用来解决类似问题的。事务是一系列的动作，它们综合在一起才是一个完整的工作单元，这些动作必须全部完成，如果有一个失败的话，那么事务就会回滚到最开始的状态，仿佛什么都没发生过一样。在企业级应用程序开发中，事务管理必不可少的技术，用来确保数据的完整性和一致性。
+事务是一系列的动作，它们综合在一起才是一个完整的工作单元，这些动作必须全部完成，如果有一个失败的话，那么事务就会回滚到最开始的状态，仿佛什么都没发生过一样。在企业级应用程序开发中，事务管理必不可少的技术，用来确保数据的完整性和一致性。
 
-事务有四个特性：ACID
+## 事务有四个特性：ACID
 
-* 原子性（Atomicity）：事务是一个原子操作，由一系列动作组成。事务的原子性确保动作要么全部完成，要么完全不起作用。
+* `原子性`（Atomicity）：事务是一个原子操作，由一系列动作组成。事务的原子性确保动作要么全部完成，要么完全不起作用。
 
-* 一致性（Consistency）：一旦事务完成（不管成功还是失败），系统必须确保它所建模的业务处于一致的状态，而不会是部分完成部分失败。在现实中的数据不应该被破坏。
+* `一致性`（Consistency）：一旦事务完成（不管成功还是失败），系统必须确保它所建模的业务处于一致的状态，而不会是部分完成部分失败。在现实中的数据不应该被破坏。
 
-* 隔离性（Isolation）：可能有许多事务会同时处理相同的数据，因此每个事务都应该与其他事务隔离开来，防止数据损坏。
+* `隔离性`（Isolation）：可能有许多事务会同时处理相同的数据，因此每个事务都应该与其他事务隔离开来，防止数据损坏。
 
-* 持久性（Durability）：一旦事务完成，无论发生什么系统错误，它的结果都不应该受到影响，这样就能从任何系统崩溃中恢复过来。通常情况下，事务的结果被写到持久化存储器中。
+* `持久性`（Durability）：一旦事务完成，无论发生什么系统错误，它的结果都不应该受到影响，这样就能从任何系统崩溃中恢复过来。通常情况下，事务的结果被写到持久化存储器中。
 
 ## 核心接口
 
 Spring事务管理的实现有许多细节，如果对整个接口框架有个大体了解会非常有利于我们理解事务，下面通过讲解Spring的事务接口来了解Spring实现事务的具体策略。
 Spring事务管理涉及的接口的联系如下：
 
-![avatar](https://img-blog.csdn.net/20160324011156424)
+![image](https://csn-images.oss-cn-shenzhen.aliyuncs.com/markdown/20190301155126.png)
 
 ## 事务管理器
 
-Spring并不直接管理事务，而是提供了多种事务管理器，他们将事务管理的职责委托给Hibernate或者JTA等持久化机制所提供的相关平台框架的事务来实现。Spring事务管理器的接口是org.springframework.transaction.PlatformTransactionManager，通过这个接口，Spring为各个平台如JDBC、Hibernate等都提供了对应的事务管理器，但是具体的实现就是各个平台自己的事情了。此接口的内容如下：
+Spring并不直接管理事务，而是提供了多种事务管理器，他们将事务管理的职责委托给Hibernate或者JTA等持久化机制所提供的相关平台框架的事务来实现。Spring事务管理器的接口是`org.springframework.transaction.PlatformTransactionManager`，通过这个接口，Spring为各个平台如JDBC、Hibernate等都提供了对应的事务管理器，但是具体的实现就是各个平台自己的事情了。此接口的内容如下：
 
 ```java
-Public interface PlatformTransactionManager()...{  
+public interface PlatformTransactionManager()...{  
     // 由TransactionDefinition得到TransactionStatus对象
     TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException;
     // 提交
     Void commit(TransactionStatus status) throws TransactionException;  
     // 回滚
     Void rollback(TransactionStatus status) throws TransactionException;  
-    }
+}
 ```
 
 ## 传播行为
@@ -95,24 +95,30 @@ Public interface PlatformTransactionManager()...{
 ## 编程式事务
 
 ```java
-    DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager(); //定义一个某个框架平台的TransactionManager，如JDBC、Hibernate
-    dataSourceTransactionManager.setDataSource(this.getJdbcTemplate().getDataSource()); // 设置数据源
-    DefaultTransactionDefinition transDef = new DefaultTransactionDefinition(); // 定义事务属性
-    transDef.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRED); // 设置传播行为属性
-    TransactionStatus status = dataSourceTransactionManager.getTransaction(transDef); // 获得事务状态
-    try {
-        // 数据库操作
-        dataSourceTransactionManager.commit(status);// 提交
-    } catch (Exception e) {
-        dataSourceTransactionManager.rollback(status);// 回滚
-    }
+// 定义一个某个框架平台的TransactionManager，如JDBC、Hibernate
+DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
+// 设置数据源
+dataSourceTransactionManager.setDataSource(this.getJdbcTemplate().getDataSource());
+// 定义事务属性
+DefaultTransactionDefinition transDef = new DefaultTransactionDefinition();
+// 设置传播行为属性
+transDef.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRED);
+// 获得事务状态
+TransactionStatus status = dataSourceTransactionManager.getTransaction(transDef);
+try {
+    // 数据库操作：提交
+    dataSourceTransactionManager.commit(status);
+} catch (Exception e) {
+    // 数据库操作：回滚
+    dataSourceTransactionManager.rollback(status);
+}
 ```
 
 ## 常见问题
 
 * @Transactional不生效的原因
 
-在 Spring 的 AOP 代理下，只有目标方法由外部调用，目标方法才由 Spring 生成的代理对象来管理，这会造成一个自调用问题。`若同一类中的其他没有@Transactional 注解的方法内部调用有@Transactional 注解的方法，有@Transactional 注解的方法的事务就会被忽略，不会发生回滚。`
+在 Spring 的 AOP 代理下，只有目标方法由外部调用，目标方法才由 Spring 生成的代理对象来管理，这会造成一个自调用问题。`若同一个类中的其他没有@Transactional 注解的方法内部调用有@Transactional 注解的方法，有@Transactional 注解的方法的事务就会被忽略，不会发生回滚。`
 
 * A方法中，编程式事务与声明式事务融为一个事务，但是声明式事务获取不到编程式事务提交的内容
 
@@ -144,5 +150,10 @@ void method2(){
 
 在抛出异常的最原始地方处理异常，即在spring捕获到异常之前处理掉
 
-详细原文：
+* A声明式事务中嵌套B声明式事务，B事务获取不到A事务的内容
+
+因为B的传播行为设置为`PROPAGATION_REQUIRED_NEW`，则B事务中获取不到A事务的内容
+
+## 参考文献
+- [demo](https://github.com/chenshinan/csn-spring-transaction)
 - [Spring事务管理（详解+实例）](https://blog.csdn.net/trigl/article/details/50968079)
