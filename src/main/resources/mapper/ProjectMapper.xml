@@ -4,7 +4,7 @@
 <mapper namespace="com.chenshinan.transaction.infra.mapper.ProjectMapper">
 
     <update id="updateIssueMaxNum">
-        update project set issue_max_num = #{issueMaxNum} where project_id = #{projectId}
+        update project set issue_max_num = #{issueMaxNum} where project_id = #{projectId} and #{issueMaxNum}>issue_max_num
     </update>
 
 </mapper>
