@@ -5,3 +5,5 @@ spring:
     url: jdbc:mysql://localhost:3306/csn-spring-transcation
     username: root
     password: root
+mybatis:
+  mapperLocations: classpath*:/mapper/*.xml

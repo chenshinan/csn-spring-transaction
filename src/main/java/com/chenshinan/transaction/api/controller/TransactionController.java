@@ -2,6 +2,7 @@ package com.chenshinan.transaction.api.controller;
 
 import com.chenshinan.transaction.api.dto.IssueTypeDTO;
 import com.chenshinan.transaction.api.service.IssueTypeService;
+import com.chenshinan.transaction.api.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,8 @@ public class TransactionController {
 
     @Autowired
     private IssueTypeService issueTypeService;
+    @Autowired
+    private ProjectService projectService;
 
     @GetMapping(value = "/queryById")
     public ResponseEntity<IssueTypeDTO> queryById(@RequestParam("id") Long id) {
@@ -33,5 +36,11 @@ public class TransactionController {
     @GetMapping(value = "/clone")
     public ResponseEntity<IssueTypeDTO> clone(@RequestParam("clone_id") Long cloneId) {
         return new ResponseEntity<>(issueTypeService.clone(cloneId), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/testCas")
+    public ResponseEntity testCas() {
+        projectService.testCas();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
